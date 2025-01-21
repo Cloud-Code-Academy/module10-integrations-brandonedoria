@@ -143,9 +143,7 @@ public with sharing class DummyJSONCallout {
 		// If the HTTP response code is successful, update the contact.
 		if (response.getStatusCode() >= 200 && response.getStatusCode() <= 299) {
 			try {
-				// Contact cont = (Contact)JSON.deserialize(response.getBody(), Contact.class);
-				Contact cont = [SELECT Id FROM Contact WHERE Id = :contactId];
-				// Contact cont = createContactFromJson(response.getBody());
+				Contact cont = [SELECT Id FROM Contact WHERE Id = :contactId]; // QUESTION: Is it possible to create a contact without querying?
 				cont.DummyJSON_Last_Updated__c = DateTime.now();
 				upsert cont;
 			} catch (DmlException e) {
@@ -173,7 +171,7 @@ public with sharing class DummyJSONCallout {
 	@TestVisible // Allows test class to see this method. Since it is private, it would not be visible otherwise.
 	private static String generateDummyJsonUserPayload(String contactId) {
 		// Query the contact to get the field values to generate the JSON payload.
-		Contact cont = [SELECT Id, FirstName, LastName, Email, Phone, Birthdate FROM Contact WHERE Id = :contactId];
+		Contact cont = [SELECT Id, FirstName, LastName, Email, Phone FROM Contact WHERE Id = :contactId];
 
 		// Create a map of the field values.
 		Map<String, Object> jsonMap = new Map<String, Object> {
@@ -182,7 +180,6 @@ public with sharing class DummyJSONCallout {
 			'email' => cont.email,
 			'phone' => cont.Phone,
 			'salesforceId' => cont.Id
-			// 'birthDate' => cont.Birthdate
 		};
 
 		// Serialize the map into a JSON string.
