@@ -89,7 +89,7 @@ public with sharing class DummyJSONCallout {
 		cont.LastName = (String) parsedResponse.get('lastName');
 		cont.Email = (String) parsedResponse.get('email');
 		cont.Phone = (String) parsedResponse.get('phone');
-		cont.Birthdate = Date.valueof((String) parsedResponse.get('birthDate'));
+		cont.Birthdate = Date.valueOf((String) parsedResponse.get('birthDate'));
 
 		// Deserialize the address from the JSON response.
 		Map<String, Object> addressMap = (Map<String, Object>) parsedResponse.get('address');
