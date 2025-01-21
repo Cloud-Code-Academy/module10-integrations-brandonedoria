@@ -95,11 +95,13 @@ public with sharing class DummyJSONCallout {
 		Map<String, Object> addressMap = (Map<String, Object>) parsedResponse.get('address');
 
 		// Set the address fields on the contact.
-		cont.MailingStreet = (String) addressMap.get('address');
-		cont.MailingCity = (String) addressMap.get('city');
-		cont.MailingPostalCode = (String) addressMap.get('postalCode');
-		cont.MailingState = (String) addressMap.get('state');
-		cont.MailingCountry = (String) addressMap.get('country');
+		if (addressMap != null) {
+			cont.MailingStreet = (String) addressMap.get('address');
+			cont.MailingCity = (String) addressMap.get('city');
+			cont.MailingPostalCode = (String) addressMap.get('postalCode');
+			cont.MailingState = (String) addressMap.get('state');
+			cont.MailingCountry = (String) addressMap.get('country');
+		}
 
 		return cont;
 	}
@@ -123,7 +125,7 @@ public with sharing class DummyJSONCallout {
 		HttpRequest request = new HttpRequest();
 
 		// Set the endpoint URL. Use direct URL or for best practices use Named Credential.
-		request.setEndpoint('callout: DummyJsonUser' + '/add');
+		request.setEndpoint('callout:DummyJsonUser' + '/add');
 
 		// Set the HTTP method to POST.
 		request.setMethod('POST');
@@ -143,7 +145,8 @@ public with sharing class DummyJSONCallout {
 			try {
 				// Contact cont = (Contact)JSON.deserialize(response.getBody(), Contact.class);
 				Contact cont = [SELECT Id FROM Contact WHERE Id = :contactId];
-				cont.DummyJSON_Last_Updated__c = datetime.now();
+				// Contact cont = createContactFromJson(response.getBody());
+				cont.DummyJSON_Last_Updated__c = DateTime.now();
 				upsert cont;
 			} catch (DmlException e) {
 				System.debug('The following exception has occurred: ' + e.getMessage());
@@ -170,15 +173,16 @@ public with sharing class DummyJSONCallout {
 	@TestVisible // Allows test class to see this method. Since it is private, it would not be visible otherwise.
 	private static String generateDummyJsonUserPayload(String contactId) {
 		// Query the contact to get the field values to generate the JSON payload.
-		Contact cont = [SELECT Id, FirstName, LastName, Email, Phone FROM Contact WHERE Id = :contactId];
+		Contact cont = [SELECT Id, FirstName, LastName, Email, Phone, Birthdate FROM Contact WHERE Id = :contactId];
 
 		// Create a map of the field values.
 		Map<String, Object> jsonMap = new Map<String, Object> {
 			'firstName' => cont.FirstName, // JSON files are case sensitive (e.g. firstname != firstName)
-			'lastName' => cont.LastName,
+			'lastName' => cont.LastName ?? 'Unknown',
 			'email' => cont.email,
 			'phone' => cont.Phone,
 			'salesforceId' => cont.Id
+			// 'birthDate' => cont.Birthdate
 		};
 
 		// Serialize the map into a JSON string.
@@ -186,9 +190,9 @@ public with sharing class DummyJSONCallout {
 
 		// Make sure to check that required contacts fields have a value. Default the value to unknown if it does not exists.
 		// Integration data can change over time. It is a best practice to add safeguards/validation to ensure the integration does not break.
-		if (cont.LastName == null) {
-			jsonMap.put('lastName', 'Unknown');
-		}
+		// if (cont.LastName == null) {
+		// 	jsonMap.put('lastName', 'Unknown');
+		// }
 
 		return jsonPayload;
 	}
