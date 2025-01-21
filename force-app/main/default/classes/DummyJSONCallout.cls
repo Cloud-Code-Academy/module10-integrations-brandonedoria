@@ -53,7 +53,7 @@ public with sharing class DummyJSONCallout {
 			try {
 				Contact cont = createContactFromJson(response.getBody());
 				cont.DummyJSON_Id__c = dummyUserId;
-				upsert cont DummyJSON_Id__c; //insert/update from the JSON response using the external id (dummyUserId) as the asset field that should be used for matching
+				upsert cont DummyJSON_Id__c; //insert/update from the JSON response using the external id (DummyJSON_Id__c) as the asset field that should be used for matching
 			} catch (DmlException e) {
 				System.debug('The following exception has occurred: ' + e.getMessage());
 			}
